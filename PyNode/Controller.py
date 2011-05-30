@@ -11,7 +11,7 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
 	self.setupUi(self)
 	self.scene = QtGui.QGraphicsScene()
 	self.scene.setBackgroundBrush(
-		QtGui.QBrush(QtGui.QPixmap("/home/jvanderdoes/Documents/dev/PyNode/resources/grid.jpg")))
+		QtGui.QBrush(QtGui.QPixmap("./resources/grid.jpg")))
         self.graphicsView.setScene(self.scene)
         nodeGroup =  Nodes.NodeOpGroup(self.scene)
 

@@ -29,7 +29,7 @@ class NodeOp(QtSvg.QGraphicsSvgItem):
 
     def __init__(self,output, scene=None):
     	QtSvg.QGraphicsSvgItem.__init__(self,
-					"/home/jvanderdoes/Documents/dev/PyNode/resources/NodeOp.svg")
+					"./resources/NodeOp.svg")
 	self.setElementId("NodeOp")
 	self.scene = scene
 	self.output = output
