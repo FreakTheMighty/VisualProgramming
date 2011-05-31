@@ -14,7 +14,7 @@
    height="60"
    id="svg2"
    version="1.1"
-   inkscape:version="0.47 r22583"
+   inkscape:version="0.48.0 r9654"
    sodipodi:docname="NodeOp.svg">
   <defs
      id="defs4">
@@ -76,11 +76,11 @@
      inkscape:snap-global="true"
      objecttolerance="10000"
      inkscape:snap-from-guide="true"
-     inkscape:window-width="1680"
-     inkscape:window-height="975"
-     inkscape:window-x="0"
-     inkscape:window-y="24"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="1676"
+     inkscape:window-height="1006"
+     inkscape:window-x="4"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -116,10 +116,21 @@
          sodipodi:rx="32.857143"
          sodipodi:cy="605.2193"
          sodipodi:cx="301.42856"
-         id="arrow"
+         id="output"
          style="fill:url(#radialGradient2887);fill-opacity:1"
          sodipodi:type="arc"
          inkscape:label="#path2820" />
+      <rect
+         style="fill:#333333"
+         id="input"
+         width="11.946959"
+         height="11.378057"
+         x="243.43434"
+         y="884.49084"
+         inkscape:label="#rect3051">
+        <title
+           id="title3053">input</title>
+      </rect>
     </g>
   </g>
 </svg>
