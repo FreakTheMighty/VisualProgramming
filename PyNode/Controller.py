@@ -14,3 +14,4 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         self.graphicsView.setScene(self.scene)
         nodeGroup =  Nodes.NodeOpGroup(self.scene)
         nodeGroup2 =  Nodes.NodeOpGroup(self.scene)
+        nodeGroup3 =  Nodes.NodeOpGroup(self.scene)
