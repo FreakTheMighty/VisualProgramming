@@ -22,12 +22,15 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         self.operator = NodeOp(self.scene)
         self.addToGroup(self.operator)
         
-        self.inputPivot = (45,0)
+        self.inputPivot = (self.boundingRect().width()/2,0)
         self.inputs = []
         self.outputs = []
         self.connections = []
         
-        self.addInput( ConnLine(self) )
+        self.addInput()
+        self.addInput()
+        self.addInput()
+
         self.outport = Output(self.scene)
         self.addToGroup(self.outport)
         self.outport.setPos(45,40)
@@ -35,7 +38,8 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
     	self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
     	self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
     	self.setHandlesChildEvents(False)
-      
+        self.updateInputConn(QtCore.QPointF(0,0))
+        
     def updateInputConn(self, position):
         for input in self.inputs:
             x1 = self.pos().x() + self.inputPivot[0]
@@ -44,7 +48,6 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
             if not input.connected:
                 x2 = self.pos().x() + input.offset[0]
                 y2 = self.pos().y() + input.offset[1]
-                
             else:
                 x2 = input.line().x2()
                 y2 = input.line().y2()
@@ -57,37 +60,39 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
             line = QtCore.QLineF(x1,y1,x2,y2)
             input.setLine(line)
             
-        for input in self.outputs:
-            x1 = self.pos().x() + self.inputPivot[0]
-            y1 = self.pos().y() + self.inputPivot[1]
-
-            if not input.connected:
-                x2 = self.pos().x() + input.offset[0]
-                y2 = self.pos().y() + input.offset[1]
-                
+        for output in self.outputs:
+            if output.connected:
+                x1 = output.line().x1()
+                y1 = output.line().y1()
+                scenePos= self.scene.views()[0].mapToScene(self.outport.pos().x(),
+                                                       self.outport.pos().y())
+                x2 = self.outport.scenePos().x()+(self.outport.boundingRect().width()/2)
+                y2 = self.outport.scenePos().y()+(self.outport.boundingRect().height()/2)
+                output.setLine(QtCore.QLineF(x1,y1,x2,y2))
             else:
-                print "Connected"
-                targetWidget = self.scene.items(position)[0]
-                x2 = input.line().x2()
-                y2 = input.line().y2()
-
-            if input.dragged:
-                x2 = position.x()
-                y2 = position.y()
-
-                
-            line = QtCore.QLineF(x1,y1,x2,y2)
-            input.setLine(line)
-
-            
+                self.outputs.remove(output)
     
     def updateOutputConn(self,outputWidget,position):
         idx = self.outputs.index(outputWidget)
 
-    def addInput(self,inputWidget):
+    def addInput(self):
+        inputWidget = ConnLine(self) 
         inputWidget.setZValue(-1000)
         self.scene.addItem(inputWidget)
         self.inputs.append(inputWidget)
+        spread = len(self.inputs)*5
+        center = self.boundingRect().width()/2
+        start = center - spread
+        for input in self.inputs:
+            if len(self.inputs) % 2 == 0:
+                if start == center:
+                    start += spread
+                    input.offset = (start,-20)
+                start += spread
+            else:
+                input.offset = (start,-20)
+                start += spread
+
 
     def connectOutput(self,outputWidget):
         self.outputs.append(outputWidget)
@@ -130,7 +135,8 @@ class ConnLine(QtGui.QGraphicsLineItem):
     def __init__(self, node, parent=None):
         self.node = node
         self.offset = (40,-20)
-        line = QtCore.QLineF(45,0,*self.offset)
+        line = QtCore.QLineF(self.node.boundingRect().width()/2,
+                             self.node.boundingRect().height()/2,*self.offset)
         QtGui.QGraphicsLineItem.__init__(self,line,parent=None)
         brush = QtGui.QColor(122,163,39)
         pen = QtGui.QPen(QtGui.QColor(79,80,40),4,
