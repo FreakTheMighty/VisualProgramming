@@ -19,27 +19,83 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         QtGui.QGraphicsItemGroup.__init__(self,scene=scene, parent=parent)
         
         self.scene = scene
-        self.output = Output(self.scene)
-        self.input = Input(self.scene)
-        self.inPorts = [self.input]
-        
-        self.path = None
-        
-        self.operator = NodeOp(self.output, self.scene)
+        self.operator = NodeOp(self.scene)
         self.addToGroup(self.operator)
-        self.addToGroup(self.output)
-        self.addToGroup(self.input)
-        self.output.setPos(45,40)
-        self.input.setPos(45,-5)
+        
+        self.inputPivot = (45,0)
+        self.inputs = []
+        self.outputs = []
+        self.connections = []
+        
+        self.addInput( ConnLine(self) )
+        self.outport = Output(self.scene)
+        self.addToGroup(self.outport)
+        self.outport.setPos(45,40)
 
     	self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
     	self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
     	self.setHandlesChildEvents(False)
-        
-        
+      
+    def updateInputConn(self, position):
+        for input in self.inputs:
+            x1 = self.pos().x() + self.inputPivot[0]
+            y1 = self.pos().y() + self.inputPivot[1]
+
+            if not input.connected:
+                x2 = self.pos().x() + input.offset[0]
+                y2 = self.pos().y() + input.offset[1]
+                
+            else:
+                x2 = input.line().x2()
+                y2 = input.line().y2()
+
+            if input.dragged:
+                x2 = position.x()
+                y2 = position.y()
+
+                
+            line = QtCore.QLineF(x1,y1,x2,y2)
+            input.setLine(line)
+            
+        for input in self.outputs:
+            x1 = self.pos().x() + self.inputPivot[0]
+            y1 = self.pos().y() + self.inputPivot[1]
+
+            if not input.connected:
+                x2 = self.pos().x() + input.offset[0]
+                y2 = self.pos().y() + input.offset[1]
+                
+            else:
+                print "Connected"
+                targetWidget = self.scene.items(position)[0]
+                x2 = input.line().x2()
+                y2 = input.line().y2()
+
+            if input.dragged:
+                x2 = position.x()
+                y2 = position.y()
+
+                
+            line = QtCore.QLineF(x1,y1,x2,y2)
+            input.setLine(line)
+
+            
+    
+    def updateOutputConn(self,outputWidget,position):
+        idx = self.outputs.index(outputWidget)
+
+    def addInput(self,inputWidget):
+        inputWidget.setZValue(-1000)
+        self.scene.addItem(inputWidget)
+        self.inputs.append(inputWidget)
+
+    def connectOutput(self,outputWidget):
+        self.outputs.append(outputWidget)
+
+
 class NodeOp(QtSvg.QGraphicsSvgItem):
 
-    def __init__(self,output, scene=None):
+    def __init__(self, scene=None):
     	QtSvg.QGraphicsSvgItem.__init__(self,
 					"./resources/NodeOp.svg")
         self.setElementId("NodeOp")
@@ -50,142 +106,59 @@ class NodeOp(QtSvg.QGraphicsSvgItem):
 
     def mouseMoveEvent(self,event):
     	QtSvg.QGraphicsSvgItem.mouseMoveEvent(self,event)
-        if self.group().output.paths:
-    
-            for idx, path in enumerate(self.group().output.paths):
-                scenePos = self.group().output.scenePos()
-                x1 = scenePos.x()+(self.group().output.boundingRect().width()/2)
-                y1 = scenePos.y()+(self.group().output.boundingRect().height()/2)
-            
-                x2 = self.group().output.paths[idx].line().x2()
-                y2 = self.group().output.paths[idx].line().y2()
-            	
-                line = QtCore.QLineF(x1,y1,x2,y2)
-                path.setLine(line)
-                
-        if self.group().input.nodes:
-            
-            for idx, node in enumerate(self.group().input.nodes):
-                x1 = node.output.paths[idx].line().x1()
-                y1 = node.output.paths[idx].line().y1()
-                
-                scenePos = self.group().input.scenePos()
-                x2 = scenePos.x()+(self.group().input.boundingRect().width()/2)
-                y2 = scenePos.y()+(self.group().input.boundingRect().height()/2)
-                line = QtCore.QLineF(x1,y1,x2,y2)
-                index = node.output.nodes.index(self.group())
-                node.output.paths[index].setLine(line)
-
-
-class Output(QtSvg.QGraphicsSvgItem):
-
-    def __init__(self,scene=None,parent=None):
-    	QtSvg.QGraphicsSvgItem.__init__(self,
-					"./resources/NodeOp.svg")
-	
-        self.paths = []
-        self.nodes = []
-        self.setElementId("output")
-        self.scene = scene
-        self.parent = parent 
-        self.setParentItem(parent)
-        self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
-        self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
-
-        self.dragPhase = 1
+        self.group().updateInputConn(event.scenePos())
+        #self.group().updateOutputConn(self,event.pos())
         
-        if scene:
-    	   scene.addItem(self)
-
-
-    def mouseMoveEvent(self,event):
-        if self.scene.itemAt(event.scenePos()) == self and self.dragPhase:
-            self.dragPhase = 0
-            path = self.scene.addLine(QtCore.QLineF(0,0,0,0),PEN)
-            path.setZValue(-1000)
-            self.paths.append(path)
-            
-        scenePos = self.scenePos()
-        x1 = scenePos.x()+(self.boundingRect().width()/2)
-        y1 = scenePos.y()+(self.boundingRect().height()/2)
-        x2 = event.scenePos().x()
-        y2 = event.scenePos().y()
-	
-        line = QtCore.QLineF(x1,y1,x2,y2)
-        self.paths[-1].setLine(line)
-        
+                
     def mouseReleaseEvent(self,event):  
-        if self.paths:
-            view = self.scene.views()[0]
-            underWidgets = self.scene.items(self.paths[-1].line().p2())
-            widget = [w for w in underWidgets if isinstance(w,Input)]
-            if not widget:
-                self.scene.removeItem(self.paths[-1])
-                self.paths.pop(-1)
-                for node in self.nodes:
-                    if self in node.input.nodes:
-                        node.input.nodes.remove(self)
-            else:
-                if len(widget[0].group().input.nodes) < 1:
-                    widget[0].group().input.nodes.append(self.group())
-                    self.nodes.append(widget[0].group())
-                else:
-                    self.scene.removeItem(self.paths[-1])
-                    self.paths.pop(-1)
-
-        self.dragPhase = 1
+        QtSvg.QGraphicsSvgItem.mouseReleaseEvent(self,event)
+        #self.group().updateOutputConn(self,event.pos())
         
-class Input(QtSvg.QGraphicsSvgItem):
+class Output(QtSvg.QGraphicsSvgItem):
 
     def __init__(self,scene=None,parent=None):
         QtSvg.QGraphicsSvgItem.__init__(self,
                     "./resources/NodeOp.svg")
     
-        self.nodes = []
-        
-        self.setElementId("input")
-        self.scene = scene
-        self.parent = parent 
-        self.setParentItem(parent)
-        self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
-        self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
-        self.setAcceptDrops(True)
+        self.setElementId("output")
         if scene:
-           scene.addItem(self)
-        
+            scene.addItem(self)
+    
+    
+class ConnLine(QtGui.QGraphicsLineItem):
+    
+    def __init__(self, node, parent=None):
+        self.node = node
+        self.offset = (40,-20)
+        line = QtCore.QLineF(45,0,*self.offset)
+        QtGui.QGraphicsLineItem.__init__(self,line,parent=None)
         brush = QtGui.QColor(122,163,39)
         pen = QtGui.QPen(QtGui.QColor(79,80,40),4,
                     Qt.SolidLine,Qt.FlatCap,Qt.MiterJoin)
-    
-    
+        self.setPen(pen)
+        self.setLine(line)
+        #self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
+        self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
+        self.connected = False
+        self.dragged = False
+        
     def mouseMoveEvent(self,event):
-        for node in self.nodes:
-            scenePos = node.output.scenePos()
-            x1 = scenePos.x()+(self.boundingRect().width()/2)
-            y1 = scenePos.y()+(self.boundingRect().height()/2)
-            x2 = event.scenePos().x()
-            y2 = event.scenePos().y()
-    
-            line = QtCore.QLineF(x1,y1,x2,y2)
-            node.output.paths[-1].setLine(line)
-    
-    def mouseReleaseEvent(self,event):  
-        view = self.scene.views()[0]
-        for node in self.nodes:
-            index = node.output.nodes.index(self.group())
-            underWidgets = self.scene.items(node.output.paths[index].line().p2())
-            if self in underWidgets:
-                x1 = node.output.paths[index].line().x1()
-                y1 = node.output.paths[index].line().y1()
-                
-                scenePos = self.scenePos()
-                x2 = scenePos.x()+(self.boundingRect().width()/2)
-                y2 = scenePos.y()+(self.boundingRect().height()/2)
-                line = QtCore.QLineF(x1,y1,x2,y2)
-                node.output.paths[index].setLine(line)
-            else:
-                self.scene.removeItem(node.output.paths[index])
-                self.nodes.remove(node)
-                node.output.nodes.remove(self.group())
+        QtGui.QGraphicsLineItem.mouseMoveEvent(self,event)
+        self.dragged = True
+        self.connected = False
+        self.node.updateInputConn(event.scenePos())
 
-       
+    def mouseReleaseEvent(self,event):
+        QtGui.QGraphicsLineItem.mouseReleaseEvent(self,event)
+        self.dragged = False
+        
+        targetWidget = self.scene().items(event.scenePos())
+        if targetWidget:
+            if isinstance(targetWidget[0],Output) and targetWidget[0] != self.node:
+                self.connected = True
+                x2 = targetWidget[0].pos().x()+(targetWidget[0].boundingRect().width()/2)
+                y2 = targetWidget[0].pos().y()+(targetWidget[0].boundingRect().height()/2)
+                self.line().setP2(QtCore.QPointF(x2,y2))
+                targetWidget[0].group().connectOutput(self)
+                
+        self.node.updateInputConn(event.scenePos())
