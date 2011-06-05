@@ -33,6 +33,7 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
 
         self.outport = Output(self.scene)
         self.addToGroup(self.outport)
+        self.addToGroup(QtGui.QGraphicsTextItem("Hello"))
         self.outport.setPos(45,40)
 
     	self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
@@ -138,8 +139,8 @@ class ConnLine(QtGui.QGraphicsLineItem):
         line = QtCore.QLineF(self.node.boundingRect().width()/2,
                              self.node.boundingRect().height()/2,*self.offset)
         QtGui.QGraphicsLineItem.__init__(self,line,parent=None)
-        brush = QtGui.QColor(122,163,39)
-        pen = QtGui.QPen(QtGui.QColor(79,80,40),4,
+        brush = QtGui.QColor(0,0,0)
+        pen = QtGui.QPen(QtGui.QColor(0,0,0),4,
                     Qt.SolidLine,Qt.FlatCap,Qt.MiterJoin)
         self.setPen(pen)
         self.setLine(line)
