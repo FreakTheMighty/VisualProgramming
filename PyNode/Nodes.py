@@ -8,6 +8,8 @@ import PyQt4.QtSvg as QtSvg
 from PyQt4.Qt import Qt
 from PyQt4.Qt import QEvent
 
+import NodeOps
+
 ARROW_OFFSET = (43,47)
 BUSH = QtGui.QColor(122,163,39)
 PEN = QtGui.QPen(QtGui.QColor(79,80,40),4,
@@ -15,10 +17,13 @@ PEN = QtGui.QPen(QtGui.QColor(79,80,40),4,
 
 class NodeOpGroup(QtGui.QGraphicsItemGroup):
 
-    def __init__(self,scene=None, parent=None):
+    def __init__(self, controller, function, scene=None, parent=None):
         QtGui.QGraphicsItemGroup.__init__(self,scene=scene, parent=parent)
+        self.controller = controller
+        self.compiled = None
+        self.scene = scene       
+        self.title = ""
         
-        self.scene = scene
         self.operator = NodeOp(self.scene)
         self.addToGroup(self.operator)
         
@@ -27,20 +32,32 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         self.outputs = []
         self.connections = []
         
-        self.addInput()
-        self.addInput()
-        self.addInput()
-
+        
         self.outport = Output(self.scene)
         self.addToGroup(self.outport)
-        self.addToGroup(QtGui.QGraphicsTextItem("Hello"))
         self.outport.setPos(45,40)
 
     	self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
     	self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
     	self.setHandlesChildEvents(False)
-        self.updateInputConn(QtCore.QPointF(0,0))
         
+        self.func = NodeOps.Engine.getFuncObj(function)
+        self.initFuncAttrs()
+        self.updateInputConn(QtCore.QPointF(0,0))
+
+    def initFuncAttrs(self):
+        #Set Node Title
+        typeCount = 0
+        for node in self.controller.nodes:
+            if node.func.func_name == self.func.func_name:
+                typeCount += 1
+        self.title = QtGui.QGraphicsTextItem(self.func.func_name+ "_%s"%typeCount)
+        self.addToGroup(self.title)
+        
+        #Create appropriate inputs
+        for i in range(self.func.func_code.co_argcount):
+            self.addInput()
+
     def updateInputConn(self, position):
         for input in self.inputs:
             x1 = self.pos().x() + self.inputPivot[0]
@@ -148,6 +165,7 @@ class ConnLine(QtGui.QGraphicsLineItem):
         self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
         self.connected = False
         self.dragged = False
+        
         
     def mouseMoveEvent(self,event):
         QtGui.QGraphicsLineItem.mouseMoveEvent(self,event)

@@ -40,6 +40,27 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="addNodeButton">
+        <property name="text">
+         <string>Add Node</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="stepButton">
+        <property name="text">
+         <string>Step --&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="runButton">
+        <property name="text">
+         <string>Run</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -62,7 +83,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
