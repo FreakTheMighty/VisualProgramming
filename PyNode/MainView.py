@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'resources/Main.ui'
 #
-# Created: Mon Jun  6 23:06:31 2011
+# Created: Tue Jun  7 23:10:49 2011
 #      by: PyQt4 UI code generator 4.8.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,6 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(800, 600)
+        MainWindow.setDocumentMode(False)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
@@ -53,10 +54,19 @@ class Ui_MainWindow(object):
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
         self.menubar.setObjectName(_fromUtf8("menubar"))
+        self.menuFile = QtGui.QMenu(self.menubar)
+        self.menuFile.setObjectName(_fromUtf8("menuFile"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
+        self.actionSave_As = QtGui.QAction(MainWindow)
+        self.actionSave_As.setObjectName(_fromUtf8("actionSave_As"))
+        self.actionOpen = QtGui.QAction(MainWindow)
+        self.actionOpen.setObjectName(_fromUtf8("actionOpen"))
+        self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionSave_As)
+        self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -66,4 +76,10 @@ class Ui_MainWindow(object):
         self.addNodeButton.setText(QtGui.QApplication.translate("MainWindow", "Add Node", None, QtGui.QApplication.UnicodeUTF8))
         self.stepButton.setText(QtGui.QApplication.translate("MainWindow", "Step -->", None, QtGui.QApplication.UnicodeUTF8))
         self.runButton.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_As.setText(QtGui.QApplication.translate("MainWindow", "Save As ...", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_As.setToolTip(QtGui.QApplication.translate("MainWindow", "Save This Script", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setToolTip(QtGui.QApplication.translate("MainWindow", "Open Scene", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
 

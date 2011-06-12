@@ -21,10 +21,9 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         QtGui.QGraphicsItemGroup.__init__(self,scene=scene, parent=parent)
         self.controller = controller
         self.compiled = None
-        self.scene = scene       
         self.title = ""
         
-        self.operator = NodeOp(self.scene)
+        self.operator = NodeOp(scene)
         self.addToGroup(self.operator)
         
         self.inputPivot = (self.boundingRect().width()/2,0)
@@ -33,7 +32,7 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         self.connections = []
         
         
-        self.outport = Output(self.scene)
+        self.outport = Output(scene)
         self.addToGroup(self.outport)
         self.outport.setPos(45,40)
 
@@ -57,6 +56,34 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         #Create appropriate inputs
         for i in range(self.func.func_code.co_argcount):
             self.addInput()
+
+    def setTitle(self,title):
+        self.title.setPlainText(title)
+        
+    def delete(self):
+        self.scene().removeItem(self)
+        for conn in self.inputs:
+            self.scene().removeItem(conn)
+        for conn in self.outputs:
+            conn.connected = False
+            conn.node.updateInputConn(QtCore.QPointF(0,0))
+            self.outputs.remove(conn)
+            
+        self.controller.nodes.remove(self)
+        
+    def connectInput(self,node,idx):
+        self.inputs[idx].connected = True
+        self.inputs[idx].dragged = True
+        node.outputs.append(self.inputs[idx])
+        scenePos= self.scene().views()[0].mapToScene(node.outport.pos().x(),
+                                       node.outport.pos().y())
+        
+        x2 = node.outport.scenePos().x()+(node.outport.boundingRect().width()/2)
+        y2 = node.outport.scenePos().y()+(node.outport.boundingRect().height()/2)
+
+        self.updateInputConn(QtCore.QPointF(x2,y2))
+        self.inputs[idx].dragged = False
+        
 
     def updateInputConn(self, position):
         for input in self.inputs:
@@ -82,7 +109,7 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
             if output.connected:
                 x1 = output.line().x1()
                 y1 = output.line().y1()
-                scenePos= self.scene.views()[0].mapToScene(self.outport.pos().x(),
+                scenePos= self.scene().views()[0].mapToScene(self.outport.pos().x(),
                                                        self.outport.pos().y())
                 x2 = self.outport.scenePos().x()+(self.outport.boundingRect().width()/2)
                 y2 = self.outport.scenePos().y()+(self.outport.boundingRect().height()/2)
@@ -96,7 +123,7 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
     def addInput(self):
         inputWidget = ConnLine(self) 
         inputWidget.setZValue(-1000)
-        self.scene.addItem(inputWidget)
+        self.scene().addItem(inputWidget)
         self.inputs.append(inputWidget)
         spread = len(self.inputs)*5
         center = self.boundingRect().width()/2
@@ -114,18 +141,17 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
 
     def connectOutput(self,outputWidget):
         self.outputs.append(outputWidget)
-
-
+        
+        
 class NodeOp(QtSvg.QGraphicsSvgItem):
 
     def __init__(self, scene=None):
     	QtSvg.QGraphicsSvgItem.__init__(self,
 					"./resources/NodeOp.svg")
         self.setElementId("NodeOp")
-        self.scene = scene
     	self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True);
-    	self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True);
-
+    	self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(QtGui.QGraphicsItem.ItemIsFocusable, True)
 
     def mouseMoveEvent(self,event):
     	QtSvg.QGraphicsSvgItem.mouseMoveEvent(self,event)
@@ -135,8 +161,12 @@ class NodeOp(QtSvg.QGraphicsSvgItem):
                 
     def mouseReleaseEvent(self,event):  
         QtSvg.QGraphicsSvgItem.mouseReleaseEvent(self,event)
-        #self.group().updateOutputConn(self,event.pos())
         
+        
+    def keyPressEvent(self,event):
+        if event.key() == 16777219:
+            self.group().delete()
+    
 class Output(QtSvg.QGraphicsSvgItem):
 
     def __init__(self,scene=None,parent=None):
@@ -151,6 +181,7 @@ class Output(QtSvg.QGraphicsSvgItem):
 class ConnLine(QtGui.QGraphicsLineItem):
     
     def __init__(self, node, parent=None):
+        #self.node is the parent node
         self.node = node
         self.offset = (40,-20)
         line = QtCore.QLineF(self.node.boundingRect().width()/2,
@@ -179,10 +210,11 @@ class ConnLine(QtGui.QGraphicsLineItem):
         
         targetWidget = self.scene().items(event.scenePos())
         if targetWidget:
-            if isinstance(targetWidget[0],Output) and targetWidget[0] != self.node:
+            if isinstance(targetWidget[0],Output) and targetWidget[0] != self.node or\
+               isinstance(targetWidget[0],NodeOp) and targetWidget[0].group() != self.node:
                 self.connected = True
-                x2 = targetWidget[0].pos().x()+(targetWidget[0].boundingRect().width()/2)
-                y2 = targetWidget[0].pos().y()+(targetWidget[0].boundingRect().height()/2)
+                x2 = targetWidget[0].pos().x()+(targetWidget[0].group().outport.boundingRect().width()/2)
+                y2 = targetWidget[0].pos().y()+(targetWidget[0].group().outport.boundingRect().height()/2)
                 self.line().setP2(QtCore.QPointF(x2,y2))
                 targetWidget[0].group().connectOutput(self)
                 

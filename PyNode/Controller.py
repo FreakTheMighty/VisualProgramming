@@ -17,18 +17,53 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         self.scene.setBackgroundBrush(QtGui.QBrush(QtGui.QPixmap("./resources/grid.jpg")))
         self.graphicsView.setScene(self.scene)
         self.comboBox.addItems(NodeOps.Engine.listOperators())
-        self.connect(self.addNodeButton,  QtCore.SIGNAL('clicked(bool)'), self.addNode)
+        self.connect(self.addNodeButton,  QtCore.SIGNAL('clicked(bool)'), self.onAddNode)
         self.connect(self.runButton,  QtCore.SIGNAL('clicked(bool)'), self.runScript)
         self.connect(self.stepButton,  QtCore.SIGNAL('clicked(bool)'), self.stepThroughScript)
 
+
         self.nodes = []
         self.compiled = None
+
+    def on_actionSave_As_triggered(self,checked=None):
+        if checked == False:
+            graph = self.constructSceneGraph()
+            filepath = QtGui.QFileDialog.getSaveFileName(self, "FileDialog")
+            if filepath:
+                networkx.readwrite.graphml.write_graphml(graph,str(filepath))
         
-    def addNode(self,val):
+    def on_actionOpen_triggered(self,checked=None):
+        if checked == None:
+            filepath = QtGui.QFileDialog.getOpenFileName (self, "FileDialog")
+            print filepath
+            if filepath:
+                graph = networkx.readwrite.graphml.read_graphml(str(filepath))
+                self.loadGraph(graph)
+                
+    def loadGraph(self,graph):
+        for node in graph.node:
+            new_node = self.addNode(graph.node[node]["func_name"])
+            graph.node[node]["Object"] = new_node
+            new_node.setTitle(str(node))
+            posx = graph.node[node]["posx"]
+            posy = graph.node[node]["posy"]
+            new_node.setPos(posx,posy)
+            
+        graph = graph.reverse()
+        for node in graph:
+            for idx, neighbor in enumerate(graph.neighbors(node)):
+                #print idx,neighbor
+                graph.node[node]["Object"].connectInput(graph.node[neighbor]["Object"],idx)
+                
+    def onAddNode(self,val):
         nodeName = self.comboBox.currentText()
+        self.addNode(nodeName)
+        
+    def addNode(self,nodeName):
         node = Nodes.NodeOpGroup(self, nodeName, self.scene)
         self.nodes.append(node)
-        
+        return node
+
     def stepThroughScript(self):
         if self.compiled:
             try:
@@ -37,7 +72,7 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
                 self.compiled = None
                 print "End of script reached"
         else:
-            self.compiled = self.constructGraph()
+            self.compiled = self.compileGraph()
             try:
                 self.compiled.next()
             except StopIteration:
@@ -45,8 +80,28 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
                 print "End of script reached"
                 
     def runScript(self,val):
-        [i for i in self.constructGraph()]      
-        
+        [i for i in self.compileGraph()]      
+
+    def constructSceneGraph(self):
+        sources = []
+        graph = networkx.nx.DiGraph()
+        for node in self.nodes:
+            if node.inputs or node.outputs:
+                if not node.inputs:
+                    sources.append(node)
+                graph.add_node(str(node.title.toPlainText()),
+                               func_name = node.func.func_name,
+                               posx = node.pos().x(),
+                               posy = node.pos().y())
+                
+        for node in self.nodes:
+            if node.inputs or node.outputs:
+                for output in node.outputs:
+                    if node != output.node:
+                        graph.add_edge(str(node.title.toPlainText()),
+                                       str(output.node.title.toPlainText()))
+        return graph
+            
     def constructGraph(self):
         sources = []
         graph = networkx.nx.DiGraph()
@@ -61,12 +116,25 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
                 for output in node.outputs:
                     if node != output.node:
                         graph.add_edge(node,output.node)
-             
+        return graph
     
+    def compileGraph(self):
+        graph = self.constructGraph()
         top_sort = networkx.algorithms.dag.topological_sort(graph)
-        print top_sort
         for node in top_sort:
             inputs = [input.compiled for input in graph.reverse().neighbors(node)]
             node.compiled = NodeOps.Engine.generatorWrapper(node.func,len(node.outputs),*inputs)
             
-        return top_sort[-1].compiled
+        if top_sort:
+            return top_sort[-1].compiled
+        else:
+            return None
+        
+class CodeThread(QtCore.QObject):
+    
+    def __init__(self,graph, parent=None):
+        QtCore.QObject.__init__(parent=parent)
+        self.graph = graph
+        
+    
+    
