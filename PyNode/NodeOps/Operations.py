@@ -11,4 +11,4 @@ def subtract(a,b):
 
 
 def output(a):
-    print a
+    output.gui.ui.plainTextEdit.setPlainText(str(a))

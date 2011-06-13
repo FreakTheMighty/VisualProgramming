@@ -3,8 +3,8 @@ import networkx
 import Operations
 import types
 
-def generatorWrapper(func,split,*args):
-    print func.func_name
+def generatorWrapper(func,split,gui,*args):
+    func.gui = gui
     if split < 1:
         split = 1
     #print args

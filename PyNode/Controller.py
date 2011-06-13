@@ -65,22 +65,24 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         return node
 
     def stepThroughScript(self):
-        if self.compiled:
-            try:
-                self.compiled.next()
-            except StopIteration:
-                self.compiled = None
-                print "End of script reached"
-        else:
+        print self.compiled
+        if not self.compiled:
             self.compiled = self.compileGraph()
+
+        for output in self.compiled:
             try:
-                self.compiled.next()
+                print output.next()
             except StopIteration:
                 self.compiled = None
                 print "End of script reached"
-                
+
     def runScript(self,val):
-        [i for i in self.compileGraph()]      
+        if not self.compiled:
+            self.compiled =self.compileGraph()
+
+        for output in self.compiled:
+            for step in output:
+                step
 
     def constructSceneGraph(self):
         sources = []
@@ -123,13 +125,17 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         top_sort = networkx.algorithms.dag.topological_sort(graph)
         for node in top_sort:
             inputs = [input.compiled for input in graph.reverse().neighbors(node)]
-            node.compiled = NodeOps.Engine.generatorWrapper(node.func,len(node.outputs),*inputs)
+            node.compiled = NodeOps.Engine.generatorWrapper(node.func,len(node.outputs),node.gui,*inputs)
             
-        if top_sort:
-            return top_sort[-1].compiled
-        else:
-            return None
+        outputs = []
+        reversed = graph.reverse()
         
+        for node in top_sort:
+            if len( graph.neighbors(node) ) == 0:
+                outputs.append(node.compiled)
+        
+        return outputs
+    
 class CodeThread(QtCore.QObject):
     
     def __init__(self,graph, parent=None):

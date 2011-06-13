@@ -1,3 +1,4 @@
+import sys
 import math
 import copy
 
@@ -44,6 +45,20 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         self.initFuncAttrs()
         self.updateInputConn(QtCore.QPointF(0,0))
 
+
+        try:
+            module = __import__("NodeGui."+self.func.func_name)
+            self.gui_module  = getattr(module,self.func.func_name)
+            module = self.gui_module
+            self.gui = QtGui.QDockWidget(QtCore.QString(self.title.toPlainText()),parent = self.parentWidget())
+            node_widget = module.Ui_DockWidget()
+            node_widget.setupUi(self.gui)
+            self.gui.setWindowTitle(QtCore.QString(self.title.toPlainText()))
+        except ImportError:
+            self.gui_class = False
+            self.gui_module = None
+            self.gui = None
+          
     def initFuncAttrs(self):
         #Set Node Title
         typeCount = 0
@@ -61,16 +76,19 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         self.title.setPlainText(title)
         
     def delete(self):
-        self.scene().removeItem(self)
         for conn in self.inputs:
             self.scene().removeItem(conn)
+            
         for conn in self.outputs:
             conn.connected = False
             conn.node.updateInputConn(QtCore.QPointF(0,0))
+            if conn.incommingNode:
+                conn.incommingNode.outputs.remove(self)
             self.outputs.remove(conn)
             
         self.controller.nodes.remove(self)
-        
+        self.scene().removeItem(self)
+
     def connectInput(self,node,idx):
         self.inputs[idx].connected = True
         self.inputs[idx].dragged = True
@@ -153,15 +171,30 @@ class NodeOp(QtSvg.QGraphicsSvgItem):
     	self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QtGui.QGraphicsItem.ItemIsFocusable, True)
 
+
+    def mouseDoubleClickEvent(self,event):
+        if self.group().gui_module:            
+            self.group().controller.node_scroll_layout.addWidget(self.group().gui)
+            #self.group().gui.show()
+            #self.group().gui.exec_()
+        """
+        self.dockWidgetContents_4.setObjectName(_fromUtf8("dockWidgetContents_4"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.dockWidgetContents_4)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.textEdit = QtGui.QTextEdit(self.dockWidgetContents_4)
+        
+        self.textEdit.setObjectName(_fromUtf8("textEdit"))
+        self.gridLayout_2.addWidget(self.textEdit, 0, 0, 1, 1)
+        self.dockWidget.setWidget(self.dockWidgetContents_4)
+        self.verticalLayout.addWidget(self.dockWidget)
+        """
     def mouseMoveEvent(self,event):
     	QtSvg.QGraphicsSvgItem.mouseMoveEvent(self,event)
         self.group().updateInputConn(event.scenePos())
         #self.group().updateOutputConn(self,event.pos())
-        
                 
     def mouseReleaseEvent(self,event):  
         QtSvg.QGraphicsSvgItem.mouseReleaseEvent(self,event)
-        
         
     def keyPressEvent(self,event):
         if event.key() == 16777219:
@@ -183,6 +216,7 @@ class ConnLine(QtGui.QGraphicsLineItem):
     def __init__(self, node, parent=None):
         #self.node is the parent node
         self.node = node
+        self.incommingNode = None
         self.offset = (40,-20)
         line = QtCore.QLineF(self.node.boundingRect().width()/2,
                              self.node.boundingRect().height()/2,*self.offset)
@@ -217,5 +251,6 @@ class ConnLine(QtGui.QGraphicsLineItem):
                 y2 = targetWidget[0].pos().y()+(targetWidget[0].group().outport.boundingRect().height()/2)
                 self.line().setP2(QtCore.QPointF(x2,y2))
                 targetWidget[0].group().connectOutput(self)
+                self.incommingNode = targetWidget[0].group()
                 
         self.node.updateInputConn(event.scenePos())
