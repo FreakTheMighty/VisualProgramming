@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'NodeGui/Output.ui'
 #
-# Created: Sun Jun 12 15:36:43 2011
+# Created: Sun Jun 12 22:23:39 2011
 #      by: PyQt4 UI code generator 4.8.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,6 +18,7 @@ class Ui_DockWidget(object):
     def setupUi(self, DockWidget):
         DockWidget.setObjectName(_fromUtf8("DockWidget"))
         DockWidget.resize(400, 300)
+        DockWidget.setFloating(True)
         self.dockWidgetContents = QtGui.QWidget()
         self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
         self.gridLayout = QtGui.QGridLayout(self.dockWidgetContents)

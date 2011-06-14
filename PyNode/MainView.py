@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'resources/Main.ui'
 #
-# Created: Sun Jun 12 22:12:42 2011
+# Created: Sun Jun 12 22:23:41 2011
 #      by: PyQt4 UI code generator 4.8.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -59,6 +59,12 @@ class Ui_MainWindow(object):
         self.graphicsView = QtGui.QGraphicsView(self.splitter)
         self.graphicsView.setObjectName(_fromUtf8("graphicsView"))
         self.scrollArea = QtGui.QScrollArea(self.splitter)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
+        self.scrollArea.setSizePolicy(sizePolicy)
+        self.scrollArea.setMaximumSize(QtCore.QSize(300, 16777215))
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scroll_widget = QtGui.QWidget()

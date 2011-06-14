@@ -50,14 +50,15 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
             module = __import__("NodeGui."+self.func.func_name)
             self.gui_module  = getattr(module,self.func.func_name)
             module = self.gui_module
-            self.gui = QtGui.QDockWidget(QtCore.QString(self.title.toPlainText()),parent = self.parentWidget())
-            node_widget = module.Ui_DockWidget()
-            node_widget.setupUi(self.gui)
-            self.gui.setWindowTitle(QtCore.QString(self.title.toPlainText()))
+            self.dock = QtGui.QDockWidget(QtCore.QString(self.title.toPlainText()),parent = self.parentWidget())
+            self.widget = module.Ui_DockWidget()
+            self.widget.setupUi(self.dock)
+            self.dock.setWindowTitle(QtCore.QString(self.title.toPlainText()))
         except ImportError:
             self.gui_class = False
             self.gui_module = None
-            self.gui = None
+            self.dock = None
+            self.widget = None
           
     def initFuncAttrs(self):
         #Set Node Title
@@ -174,9 +175,9 @@ class NodeOp(QtSvg.QGraphicsSvgItem):
 
     def mouseDoubleClickEvent(self,event):
         if self.group().gui_module:            
-            self.group().controller.node_scroll_layout.addWidget(self.group().gui)
-            #self.group().gui.show()
-            #self.group().gui.exec_()
+            self.group().controller.node_scroll_layout.addWidget(self.group().dock)
+            #self.group().dock.show()
+            #self.group().dock.exec_()
         """
         self.dockWidgetContents_4.setObjectName(_fromUtf8("dockWidgetContents_4"))
         self.gridLayout_2 = QtGui.QGridLayout(self.dockWidgetContents_4)

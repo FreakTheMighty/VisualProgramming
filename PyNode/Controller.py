@@ -125,7 +125,7 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         top_sort = networkx.algorithms.dag.topological_sort(graph)
         for node in top_sort:
             inputs = [input.compiled for input in graph.reverse().neighbors(node)]
-            node.compiled = NodeOps.Engine.generatorWrapper(node.func,len(node.outputs),node.gui,*inputs)
+            node.compiled = NodeOps.Engine.generatorWrapper(node.func,len(node.outputs),node.widget,*inputs)
             
         outputs = []
         reversed = graph.reverse()
