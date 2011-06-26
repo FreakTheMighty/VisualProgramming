@@ -65,16 +65,25 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         return node
 
     def stepThroughScript(self):
-        print self.compiled
         if not self.compiled:
             self.compiled = self.compileGraph()
 
         for output in self.compiled:
             try:
-                print output.next()
+                output.next()
+                self.updateToolTip()
             except StopIteration:
                 self.compiled = None
                 print "End of script reached"
+
+    def updateToolTip(self):
+        for node in self.nodes:
+            if node.compiled:
+                local_vars = node.compiled.gi_frame.f_locals
+                tooltip = "Local Variables\n"
+                for var in local_vars:
+                    tooltip += "%s : %s\n" % (var,local_vars[var])
+                node.setToolTip(tooltip)
 
     def runScript(self,val):
         if not self.compiled:
@@ -83,7 +92,10 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         for output in self.compiled:
             for step in output:
                 step
-
+         
+        self.compiled = self.compileGraph()       
+        self.updateToolTip()
+        
     def constructSceneGraph(self):
         sources = []
         graph = networkx.nx.DiGraph()
@@ -125,7 +137,7 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         top_sort = networkx.algorithms.dag.topological_sort(graph)
         for node in top_sort:
             inputs = [input.compiled for input in graph.reverse().neighbors(node)]
-            node.compiled = NodeOps.Engine.generatorWrapper(node.func,len(node.outputs),node.widget,*inputs)
+            node.compiled = NodeOps.Engine.generatorWrapper(node,len(node.outputs),node.widget,*inputs)
             
         outputs = []
         reversed = graph.reverse()
@@ -136,11 +148,5 @@ class GraphController(QtGui.QMainWindow, Ui_MainWindow):
         
         return outputs
     
-class CodeThread(QtCore.QObject):
-    
-    def __init__(self,graph, parent=None):
-        QtCore.QObject.__init__(parent=parent)
-        self.graph = graph
-        
-    
+
     

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'resources/Main.ui'
 #
-# Created: Sun Jun 12 22:23:41 2011
+# Created: Wed Jun 15 21:40:35 2011
 #      by: PyQt4 UI code generator 4.8.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -56,7 +56,7 @@ class Ui_MainWindow(object):
         self.splitter.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName(_fromUtf8("splitter"))
-        self.graphicsView = QtGui.QGraphicsView(self.splitter)
+        self.graphicsView = GraphView(self.splitter)
         self.graphicsView.setObjectName(_fromUtf8("graphicsView"))
         self.scrollArea = QtGui.QScrollArea(self.splitter)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
@@ -107,3 +107,4 @@ class Ui_MainWindow(object):
         self.actionOpen.setToolTip(QtGui.QApplication.translate("MainWindow", "Open Scene", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
 
+from View import GraphView

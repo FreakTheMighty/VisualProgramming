@@ -1,15 +1,15 @@
+GUI = {}
 
-def input():
+def input(gui):
     for i in range(20):
         yield i
     
-def add(a,b):
+def add(gui,a,b):
     return a + b
 
-def subtract(a,b):
+def subtract(gui,a,b):
     return a - b
 
 
-def output(a):
-    print output.gui
-    output.gui.textEdit.setPlainText(str(a))
+def output(gui,a):
+    gui.textEdit.setPlainText(str(a))

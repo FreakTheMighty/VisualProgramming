@@ -1,19 +1,20 @@
+import inspect
 import itertools
 import networkx
 import Operations
 import types
 
-def generatorWrapper(func,split,gui,*args):
-    func.gui = gui
+def generatorWrapper(node,split,gui,*args):
     if split < 1:
         split = 1
+    
     #print args
     if args:
         for arg in itertools.izip(*args):
             for s in range(split):
-                yield func(*arg)
+                yield node.func(gui,*arg)
     else:
-        for val in func():
+        for val in node.func(gui):
             for s in range(split):
                 yield val
 

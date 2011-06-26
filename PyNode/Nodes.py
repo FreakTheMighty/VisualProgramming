@@ -45,7 +45,6 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         self.initFuncAttrs()
         self.updateInputConn(QtCore.QPointF(0,0))
 
-
         try:
             module = __import__("NodeGui."+self.func.func_name)
             self.gui_module  = getattr(module,self.func.func_name)
@@ -70,7 +69,7 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
         self.addToGroup(self.title)
         
         #Create appropriate inputs
-        for i in range(self.func.func_code.co_argcount):
+        for i in range(self.func.func_code.co_argcount-1):
             self.addInput()
 
     def setTitle(self,title):
@@ -133,7 +132,9 @@ class NodeOpGroup(QtGui.QGraphicsItemGroup):
                 x2 = self.outport.scenePos().x()+(self.outport.boundingRect().width()/2)
                 y2 = self.outport.scenePos().y()+(self.outport.boundingRect().height()/2)
                 output.setLine(QtCore.QLineF(x1,y1,x2,y2))
+                print "connecting"
             else:
+                print "removing"
                 self.outputs.remove(output)
     
     def updateOutputConn(self,outputWidget,position):
