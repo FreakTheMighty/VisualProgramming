@@ -152,16 +152,6 @@ class Arrow(QtGui.QGraphicsLineItem):
     def __repr__(self):
         return "<%s-->%s [%s] object at %s>" % (str(self.startItem),str(self.endItem),self.keyword, id(self))
 
-    """
-    def __eq__(self,arrow):
-        try:
-            if self.keyword == arrow.keyword and self.endItem == arrow.endItem:
-                return True
-            else:
-                return False
-        except AttributeError:
-            return False
-    """
     def boundingRect(self):
         extra = (self.pen().width() + 20) / 2.0
         return QtCore.QRectF(self.line().p1(), QtCore.QSizeF(self.line().p2().x() - self.line().p1().x(),
@@ -226,10 +216,7 @@ class Arrow(QtGui.QGraphicsLineItem):
 
     def paint(self,painter,option,widget):
 
-        pen = QtGui.QPen(self.color,2)
-        arrowSize = 10
-        painter.setPen(pen)
-        painter.setBrush(self.color)
+        arrowSize = 15
 
         if self.startItem == None:
             if not self.startPos:
@@ -285,17 +272,26 @@ class Arrow(QtGui.QGraphicsLineItem):
                                             math.cos(angle + math.pi/3) * arrowSize)
         arrowP2 = self.line().p1() + QtCore.QPointF(math.sin(angle + math.pi - math.pi / 3) * arrowSize,
                                              math.cos(angle + math.pi - math.pi / 3) * arrowSize)
+        
 
         self.arrowHead.clear()
         self.arrowHead.insert(0,self.line().p1())
         self.arrowHead.insert(1,arrowP1)
         self.arrowHead.insert(2,arrowP2)
 
-        painter.drawPolygon(self.arrowHead)
 
         line = self.line()
+        middle = (arrowP1+arrowP2)/2.0
+        line.setP1(middle)
+
+        pen = QtGui.QPen(self.color,4)
+        painter.setPen(pen)
+        painter.setBrush(self.color)
         painter.drawLine(line)
 
+        pen = QtGui.QPen(self.color,1)
+        painter.setPen(pen)
+        painter.drawPolygon(self.arrowHead)
 
 class OpLoader(QtGui.QComboBox):
 
