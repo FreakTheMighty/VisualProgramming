@@ -1,11 +1,20 @@
 #!/usr/bin/env python
+
+#Standard libraries
 import sys
+
+#Third party libraries
 from PyQt4.QtGui import QApplication
 from PyQt4 import QtCore, QtGui
-import Graph
-import Nodes
 import networkx
 import yaml
+
+#Core libraries
+import Graph
+import Nodes
+
+#Operators
+import Operators
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -31,10 +40,10 @@ if __name__ == "__main__":
     main.show()
 
     #Node Objects
-    operator0 = Nodes.Node("operator0")
+    operator0 = Nodes.Node(Operators.add)
     operator0.in_count  = 4
-    operator1 = Nodes.Node("operator1")
-    operator2 = Nodes.Node("operator2")
+    operator1 = Nodes.Node(Operators.add)
+    operator2 = Nodes.Node(Operators.add)
 
     opsmodel.operators = [operator0,operator1,operator2]
     oploader.setModel(opsmodel)

@@ -6,8 +6,9 @@ import networkx
 
 class Node(object):
 
-    def __init__(self,name):
-        self.name = name
+    def __init__(self,op):
+        self.op = op
+        self.name = self.op().op.__name__
         self.in_count = 1
         self.pos = (0,0)
 
@@ -18,14 +19,21 @@ class Node(object):
         return "%s_%s" % (self.name, id(self))
 
 
-def Op(f):
-    def wrapped(*args,**kwargs):
-        func = f(*args,**kwargs)
-        func.next()
-        op = Operator()
-        op.op = func
-        return op
-    return wrapped
+def Signature(*args):
+
+    def inner_sig(f):
+
+        def wrapped(*wargs,**wkwargs):
+            func = f(*wargs,**wkwargs)
+            func.next()
+            op = Operator()
+            op.op = func
+            op.args = args
+            return op
+
+        return wrapped
+
+    return inner_sig
 
 class OpInstance(object):
 
@@ -38,10 +46,15 @@ class OpInstance(object):
 class Operator(object):
 
     def __init__(self):
-        self.arg_limit = None
+
+        self.arg = []
+
         self.inputs = []
         self.outputs = []
+        
+        #In buffer needs to be filled before the next message is broadcast
         self.in_buffer = []
+
         self.op = None
 
     def __repr__(self):
@@ -64,12 +77,12 @@ class Operator(object):
         except AttributeError:
             val = Packet(*val)
 
-        if len(self.in_buffer) < len(self.inputs):
+        if len(self.in_buffer) < len(self.args):
 
             self.in_buffer.append(val)
             self.in_buffer.sort(key=lambda args: args.key)
 
-            if len(self.in_buffer) == len(self.inputs):
+            if len(self.in_buffer) == len(self.args):
                 positional = filter(lambda arg: isinstance(arg.key,int), self.in_buffer)
                 positional.sort()
                 positional = [pos.val for pos in positional]
