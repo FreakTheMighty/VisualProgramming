@@ -14,7 +14,7 @@ import Graph
 import Nodes
 
 #Operators
-import Operators
+import TestProject.Operators as Operators
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

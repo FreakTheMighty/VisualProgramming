@@ -2,7 +2,9 @@ import subprocess
 import os
 import copy
 import tempfile
+
 import networkx
+import json
 
 class Node(object):
 
@@ -171,3 +173,19 @@ class CodeGraph(networkx.MultiDiGraph):
                         self.frame.add_edge(name,var,key)
 
         self.refresh()
+
+
+class ConfigManager(object):
+
+    def __init__(self,path):
+        self.project = path
+        self.config = json.load(open(os.path.join(path,"configs","bind.json")))
+        self.configMap = {}
+        self.loadConfigs()
+
+    def loadConfigs(self):
+        for operator, config in self.config:
+            self.configMap[operator] =json.load(open(os.path.join(self.project,"configs",config)))
+
+    def registerNode(self,node):
+        node.name
