@@ -7,16 +7,17 @@ import networkx
 class Node(object):
 
     def __init__(self,op):
-        self.op = op
-        self.name = self.op().op.__name__
-        self.in_count = 1
+        self.operator = op
+        self.name = self.operator().operator.__name__
         self.pos = (0,0)
 
+    def argCount(self):
+        return len(self.operator().args)
     def __str__(self):
         return self.name
 
     def __repr__(self):
-        return "%s_%s" % (self.name, id(self))
+        return "<%s object at %s>" % (self.operator().op.__name__,id(self))
 
 
 def Signature(*args):
@@ -27,21 +28,13 @@ def Signature(*args):
             func = f(*wargs,**wkwargs)
             func.next()
             op = Operator()
-            op.op = func
+            op.operator = func
             op.args = args
             return op
 
         return wrapped
 
     return inner_sig
-
-class OpInstance(object):
-
-    def __init__(self,operator):
-        self.operator = operator
-
-    def __repr__(self):
-        return "<%s object at %s>" % (self.operator().op.__name__,id(self))
 
 class Operator(object):
 
@@ -55,11 +48,11 @@ class Operator(object):
         #In buffer needs to be filled before the next message is broadcast
         self.in_buffer = []
 
-        self.op = None
+        self.operator = None
 
     def __repr__(self):
-        if self.op:
-            return "<Operator object %s at %s>" % (self.op.__name__,id(self))
+        if self.operator:
+            return "<Operator object %s at %s>" % (self.operator.__name__,id(self))
         else:
             return "<Operator object %s at %s>" % (None,id(self))
 
@@ -90,11 +83,11 @@ class Operator(object):
                 keyword_args = {}
                 for arg in keyword:
                     keyword_args[arg.key]=arg.val
-                self.op.send((self, positional,keyword_args))
+                self.operator.send((self, positional,keyword_args))
                 self.in_buffer = []
 
     def next(self):
-        return self.op.next()
+        return self.operator.next()
 
 class Packet(object):
 

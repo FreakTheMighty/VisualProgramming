@@ -41,7 +41,6 @@ if __name__ == "__main__":
 
     #Node Objects
     operator0 = Nodes.Node(Operators.add)
-    operator0.in_count  = 4
     operator1 = Nodes.Node(Operators.add)
     operator2 = Nodes.Node(Operators.add)
 

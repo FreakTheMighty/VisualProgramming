@@ -68,7 +68,7 @@ class GraphScene(QtGui.QGraphicsScene):
         nodeItem = NodeItemGroup(node,self.graph)
         if node not in self.nodeItems:
             self.nodeItems.append(nodeItem)
-        for idx in range(node.in_count):
+        for idx in range(node.argCount()):
             arrow = Arrow(None,nodeItem,idx)
             self.addItem(arrow)
         arrow = Arrow(nodeItem,None,"")
