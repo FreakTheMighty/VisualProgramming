@@ -19,7 +19,7 @@ class Node(object):
         return self.name
 
     def __repr__(self):
-        return "<%s object at %s>" % (self.operator().op.__name__,id(self))
+        return "<%s object at %s>" % (self.operator().operator.__name__,id(self))
 
 
 def Signature(*args):
@@ -31,6 +31,7 @@ def Signature(*args):
             func.next()
             op = Operator()
             op.operator = func
+            op.name = func.__name__
             op.args = args
             return op
 
@@ -42,15 +43,18 @@ class Operator(object):
 
     def __init__(self):
 
+        self.pos = (0,0)
+        self.graph = None
         self.arg = []
 
         self.inputs = []
         self.outputs = []
-        
+
         #In buffer needs to be filled before the next message is broadcast
         self.in_buffer = []
 
         self.operator = None
+        self.name = None
 
     def __repr__(self):
         if self.operator:
@@ -58,12 +62,14 @@ class Operator(object):
         else:
             return "<Operator object %s at %s>" % (None,id(self))
 
-
+    def argCount(self):
+        return len(self.args)
 
     def broadcast(self, val):
-        for key, output in self.outputs:
+        for u, out in self.graph.out_edges():
+            key = self.graph.edge[u][out].keys()[0]
             packet = Packet(key,val)
-            output.send(packet)
+            out.send(packet)
 
     def send(self, val):
 
@@ -137,42 +143,41 @@ class CodeGraph(networkx.MultiDiGraph):
 
     def __init__(self):
         networkx.MultiDiGraph.__init__(self)
-        self.tmp = tempfile.NamedTemporaryFile("w")
-        self.interactive = False
         self.frame = networkx.MultiDiGraph()
 
-    def refresh(self,launch=False):
-        networkx.write_dot(self.frame,self.tmp.name+".dot")
-        cmd = ["/Applications/Graphviz.app/Contents/MacOS/Graphviz",self.tmp.name+".dot"]
-        if launch:
-            subprocess.Popen(" ".join(cmd), shell=True)
+    def add_node(self,node):
+        node.graph = self
+        self.makeUniqueName(node)
+        networkx.MultiDiGraph.add_node(self,node)
+
+    def makeUniqueName(self,node):
+        names = [n.name for n in self.nodes()]
+        partitioned_names = [n.rpartition("_") for n in names]
+        if node.name in names and node not in self.nodes():
+
+            #Sort filter and sort the existing nodes.
+            #  Filter by matching node names
+            #  Sort by trailing number
+            indexed = filter(lambda n: n[0] == node.name, partitioned_names)
+            indexed = sorted(indexed,key=lambda k: k[-1])
+            if len(indexed):
+                next_idx =  str(int(indexed[0][-1])+1)
+                name = node.name.rpartition("_")
+                if name[-1].isdigit():
+                    node.name = "".join(name)
+                    return
+                else:
+                    node.name = node.name + "_" + next_idx
+                    return
+            else:
+                node.name = node.name+"_1"
 
     def add_edge(self, u, v, key=None, attr_dict=None, **attr):
+        self.add_node(u)
+        self.add_node(v)
         networkx.MultiDiGraph.add_edge(self, u, v, key=key, attr_dict=attr_dict, **attr)
-        if self.interactive:
-            self.refresh()
-
-    def remove_edge(self, u, v, key=None):
-        networkx.MultiDiGraph.remove_edge(self, u, v, key=key)
-        if self.interactive:
-            self.refresh()
 
 
-    def updateFrame(self,local):
-        for var in local:
-            if local[var] in self:
-                self.frame.add_node(var)
-
-        for var in local:
-            if local[var] in self:
-                edges = self.in_edges(local[var])
-                for edge in edges:
-                    names = namestr(edge[0],local)
-                    key = self.edge[edge[0]][edge[1]].keys()[0]
-                    for name in names:
-                        self.frame.add_edge(name,var,key)
-
-        self.refresh()
 
 
 class ConfigManager(object):

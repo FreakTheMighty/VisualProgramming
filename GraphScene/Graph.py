@@ -77,12 +77,12 @@ class GraphScene(QtGui.QGraphicsScene):
         nodeItem.setPos(*node.pos)
         return nodeItem
 
+
     def addGraph(self,graph):
         self.graph = graph
         for node in self.graph.nodes():
             self.addNode(node)
         for node1, node2 in self.graph.edges():
-            print self.graph.edge[node1][node2]
             for edge in self.graph.edge[node1][node2]:
                 self.addEdge(node1,node2,edge,add_to_graph=False)
 
@@ -125,6 +125,7 @@ class NodeItemGroup(QtGui.QGraphicsItemGroup):
             return True
         else:
             return False
+
 
     def mouseMoveEvent(self,event):
         QtGui.QGraphicsItemGroup.mouseMoveEvent(self,event)

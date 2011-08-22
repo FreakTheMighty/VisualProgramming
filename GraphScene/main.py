@@ -21,7 +21,7 @@ if __name__ == "__main__":
     main =  QtGui.QMainWindow()
     main.resize(400,400)
 
-    graph = networkx.MultiDiGraph()
+    graph = Nodes.CodeGraph()
     view = QtGui.QGraphicsView()
     graphscene= Graph.GraphScene(graph)
 
@@ -40,9 +40,9 @@ if __name__ == "__main__":
     main.show()
 
     #Node Objects
-    operator0 = Nodes.Node(Operators.add)
-    operator1 = Nodes.Node(Operators.add)
-    operator2 = Nodes.Node(Operators.add)
+    operator0 = Operators.sumprint()
+    operator1 = Operators.add()
+    operator2 = Operators.add()
 
     opsmodel.operators = [operator0,operator1,operator2]
     oploader.setModel(opsmodel)
@@ -52,6 +52,12 @@ if __name__ == "__main__":
     #graph = yaml.load(open("/tmp/test.yaml"))
     graphscene.addGraph(graph)
 
+    a = Nodes.Packet(0,1)
+    b = Nodes.Packet(1,1)
+    operator1.send(a)
+    operator1.send(b)
+    operator2.send(a)
+    operator2.send(b)
 
 
     sys.exit(app.exec_())
