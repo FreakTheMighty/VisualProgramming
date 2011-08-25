@@ -1,26 +1,13 @@
-import subprocess
-import os
 import copy
+import glob
+import json
+import os
+import subprocess
+import sys
 import tempfile
+import yaml
 
 import networkx
-import json
-
-class Node(object):
-
-    def __init__(self,op):
-        self.operator = op
-        self.name = self.operator().operator.__name__
-        self.pos = (0,0)
-
-    def argCount(self):
-        return len(self.operator().args)
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return "<%s object at %s>" % (self.operator().operator.__name__,id(self))
-
 
 def Signature(*args):
 
@@ -32,6 +19,7 @@ def Signature(*args):
             op = Operator()
             op.operator = func
             op.name = func.__name__
+            op.cls = func.__name__
             op.args = args
             return op
 
@@ -55,6 +43,8 @@ class Operator(object):
 
         self.operator = None
         self.name = None
+        self.cls = None
+        self.manager = None
 
     def __repr__(self):
         if self.operator:
@@ -64,6 +54,9 @@ class Operator(object):
 
     def argCount(self):
         return len(self.args)
+
+    def data(self):
+        return self.manager.instance(self)
 
     def broadcast(self, val):
         for u, out in self.graph.out_edges():
@@ -77,9 +70,7 @@ class Operator(object):
             val.key
         except AttributeError:
             val = Packet(*val)
-
         if len(self.in_buffer) < len(self.args):
-
             self.in_buffer.append(val)
             self.in_buffer.sort(key=lambda args: args.key)
 
@@ -109,25 +100,6 @@ class Packet(object):
     def __str__(self):
         return str(self.val)
 
-def connect(operator1,operator2,key):
-    if operator2.arg_limit:
-        if len(operator2.inputs) < operator2.arg_count:
-            operator2.inputs.append(operator1)
-            operator1.outputs.append((key,operator2))
-    else:
-        operator2.inputs.append(operator1)
-        operator1.outputs.append((key,operator2))
-
-def disconnect(operator1,operator2,key):
-    if (key, operator1) in operator2.outputs:
-        operator2.outputs.remove((key,operator1))
-    elif operator1 in operator2.inputs:
-        operator2.inputs.remove(operator1)
-
-    if (key,operator2)in operator1.outputs:
-        operator1.outputs.remove((key,operator2))
-    elif operator2 in operator1.inputs:
-        operator1.inputs.remove(operator2)
 
 def drawdotgraph(graph):
     tmp = tempfile.NamedTemporaryFile("w")
@@ -179,18 +151,44 @@ class CodeGraph(networkx.MultiDiGraph):
 
 
 
+class ProjectManager(object):
 
-class ConfigManager(object):
+    def __init__(self, projectPath=None):
+        self.projectPath = None
+        self.setProject(projectPath)
 
-    def __init__(self,path):
-        self.project = path
-        self.config = json.load(open(os.path.join(path,"configs","bind.json")))
-        self.configMap = {}
-        self.loadConfigs()
+    def setProject(self,projectPath):
+        self.projectPath = os.path.abspath(projectPath)
+        if self.projectPath not in sys.path:
+            sys.path.append(os.path.join(self.projectPath,"Nodes"))
 
-    def loadConfigs(self):
-        for operator, config in self.config:
-            self.configMap[operator] =json.load(open(os.path.join(self.project,"configs",config)))
 
-    def registerNode(self,node):
-        node.name
+class DataManager(object):
+
+    def __init__(self, project):
+        self.project = project
+        self.templates = {}
+        self.instances = {}
+        self.setProject(project)
+
+    def setProject(self,project):
+        self.project = project
+        templateFiles = glob.glob(os.path.join(project.projectPath,"DataTemplates","*.json"))
+        names = [os.path.basename(os.path.splitext(t)[0]) for t in templateFiles]
+        for idx, template in enumerate(templateFiles):
+            data = json.load(open(os.path.join(self.project.projectPath,"DataTemplates",template)))
+            self.templates[names[idx]] = data
+
+    def register(self,*nodes):
+        for node in nodes:
+            node.manager = self
+            dataPath = os.path.join(self.project.projectPath,"Data",node.name)
+            if os.path.exists(dataPath):
+                data = json.load(open(dataPath))
+            else:
+                data = copy.copy(self.templates[node.cls])
+            self.instances[node] = data
+
+    def instance(self,node):
+        return self.instances[node]
+

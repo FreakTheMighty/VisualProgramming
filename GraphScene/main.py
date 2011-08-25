@@ -13,8 +13,6 @@ import yaml
 import Graph
 import Nodes
 
-#Operators
-import TestProject.Operators as Operators
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -40,9 +38,14 @@ if __name__ == "__main__":
     main.show()
 
     #Node Objects
-    operator0 = Operators.sumprint()
-    operator1 = Operators.add()
-    operator2 = Operators.add()
+    projectMng = Nodes.ProjectManager("./TestProject")
+    dataMng = Nodes.DataManager(projectMng)
+    #Operators
+    import Maths
+    operator0 = Maths.sumprint()
+    operator1 = Maths.add()
+    operator2 = Maths.add()
+    dataMng.register(operator0,operator1,operator2)
 
     opsmodel.operators = [operator0,operator1,operator2]
     oploader.setModel(opsmodel)
