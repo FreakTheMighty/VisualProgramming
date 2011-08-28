@@ -1,0 +1,2 @@
+#This directory assumes you have Celery, RabbitMQ, and Redis installed.
+#The startservices shell script should start the  rabbitmq and redis and celery deamons

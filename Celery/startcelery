@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#Start celery
+celeryd --loglevel=INFO
