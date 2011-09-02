@@ -27,6 +27,15 @@ def Signature(*args):
 
     return inner_sig
 
+class Node(object):
+
+    def __init__(self):
+        self.woot = []
+
+    def engine(self, manager, *args, **kwargs):
+        raise NotImplementedError
+
+    
 class Operator(object):
 
     def __init__(self):
