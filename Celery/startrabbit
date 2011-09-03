@@ -2,4 +2,3 @@
 
 #Start rabbitmq server
 sudo rabbitmq-server -detached
-redis-server
