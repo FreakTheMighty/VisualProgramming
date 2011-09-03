@@ -1,5 +1,7 @@
-import networkx
+import cPickle
 import uuid
+import networkx
+import redis
 
 class TaskGraph(networkx.MultiDiGraph):
 
@@ -21,3 +23,5 @@ class TaskNode(object):
 
     def idToString(self):
         return str(self.nodeID)
+
+

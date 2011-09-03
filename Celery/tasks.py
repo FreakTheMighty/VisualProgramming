@@ -5,29 +5,16 @@ from celery.task import Task
 import uuid
 import redis
 
-@task
-def add(x, y, callback=None):
-    print "WOOOT", add.request.id
-    result = x + y
-    if callback is not None:
-        subtask(callback).delay(result)
-    return result
 
-
-@task()
-def test(blah):
-    return blah
-
-
-def plus(x,y):
-    return x+y
-
-class Node(Task):
+class NodeRunner(Task):
     
-    def __init__(self):
+    Task.name = "WOOT"
+
+    def __init__(self,name=None):
         self.redis = redis.Redis(host="localhost", port=6379)
 
     def run(self, graph, node, *args,**kwargs):
+        """This function is called by celery."""
         upstreamNodes = graph.in_edges(node)
         upstreamArgs = self.getResults(upstreamNodes)
         upstreamArgs.extend(args)
@@ -36,8 +23,14 @@ class Node(Task):
 
         forExecution = self.checkDownStream(graph,node)
         for node in forExecution:
-            task = Node()
+            task = NodeRunner()
             task.delay(graph,node)
+
+    def sortUpstreamResults(self,graph,node):
+        """This function will be responsible for taking the edge keywords and
+        organizing the arguments.  Positional arguments will be sorted and keyword arguments
+        seperated"""
+        raise NotImplementedError
 
     def checkDownStream(self,graph,node):
         """Current graph and current node.  Returns a list of TaskNodes who's upstream results
@@ -46,8 +39,8 @@ class Node(Task):
         nodes = graph.out_edges(node)
         downStreamNodes = [node[1] for node in nodes]
         
-        #Loop over those nodes and check to see whether the nodes that those
-        #down stream nodes depend on are ready
+        #Loop over the downstream nodes and check to see whether the nodes that those
+        #down stream nodes depend on have produced results
         readyToExecute = []
         for node in downStreamNodes:
             nodes = graph.in_edges(node)
@@ -69,13 +62,3 @@ class Node(Task):
             results.append(result)
         return results
 
-    def after_return(self, *args, **kwargs):
-
-        #Check to see whether the redis results needed for
-        #the down stream task are finished, if so, launch the task
-        print("Task returned: %r" % (self.request, ))
-
-    
-@task(base=Node)
-def tsum(numbers):
-    return sum(numbers)
