@@ -37,30 +37,6 @@ if __name__ == "__main__":
     main.setCentralWidget(view)
     main.show()
 
-    #Node Objects
-    projectMng = Nodes.ProjectManager("./TestProject")
-    dataMng = Nodes.DataManager(projectMng)
-    #Operators
-    import Maths
-    operator0 = Maths.sumprint()
-    operator1 = Maths.add()
-    operator2 = Maths.add()
-    dataMng.register(operator0,operator1,operator2)
-
-    opsmodel.operators = [operator0,operator1,operator2]
-    oploader.setModel(opsmodel)
-
-    graph.add_edge(operator1,operator0,key=0)
-    graph.add_edge(operator2,operator0,key=1)
-    #graph = yaml.load(open("/tmp/test.yaml"))
-    graphscene.addGraph(graph)
-
-    a = Nodes.Packet(0,1)
-    b = Nodes.Packet(1,1)
-    operator1.send(a)
-    operator1.send(b)
-    operator2.send(a)
-    operator2.send(b)
 
 
     sys.exit(app.exec_())
