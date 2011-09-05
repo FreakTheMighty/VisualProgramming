@@ -11,9 +11,20 @@ import networkx
 import yaml
 
 #Core libraries
-import GraphScene.Graph as Graph
-import Flow.TaskGraph as TaskGraph
+import Flopy.GraphScene.Graph as Graph
+import Flopy.Flow.TaskGraph as TaskGraph
 
+
+class AddTask(TaskGraph.TaskNode):
+
+    def __init__(self):
+        TaskGraph.TaskNode.__init__(self)
+
+    def argCount(self):
+        return 2
+
+    def func(self,a,b):
+        return a + b
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -24,19 +35,17 @@ if __name__ == "__main__":
 
     graph = TaskGraph.TaskGraph()
     graphscene= Graph.GraphScene(graph)
-    a = graph.add_task(math.pow)
-    b = graph.add_task(math.pow)
-    c = graph.add_task(math.pow)
+    a = AddTask()
+    b = AddTask()
+    c = AddTask()
+
+    graph.add_node(a)
+    graph.add_node(b)
+    graph.add_node(c)
+
     graph.add_edge(a,b,0)
     graph.add_edge(c,b,1)
     graphscene.addGraph(graph)
-    
-
-    oploader = Graph.OpLoader(graphscene)
-    oploader.setGeometry(0,0,200,30)
-    opsmodel = Graph.OperatorsModel()
-    completer = QtGui.QCompleter(opsmodel)
-    completer.setCompletionMode(1)
 
 
     graphscene.setParent(view)

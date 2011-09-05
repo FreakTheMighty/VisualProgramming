@@ -21,40 +21,12 @@ class NodeStage(object):
         return self.runner.apply_async(things)
 
     def __repr__(self):
-        funcname = ".".join([self.node.func.__module__,self.node.func.__name__])
-        return "< NodeStage::%s at %s >" % (funcname,id(self))
-
-class NodeRunner(Task):
-
-    def __init__(self):
-        Task.__init__(self)
-
-    def run(self, graph, node, *args,**kwargs):
-        """This function is called by celery."""
-
-        #Get incomming products
-        positional,keyword = getUpstreamProduct(graph, node)
-        positional.extend(args)
-        keyword.update(kwargs)
-
-        #execute the node
-        result = node.func(*positional,**keyword)
-        setResult(node,result)
-
-        forExecution = downstreamStatus(graph,node)
-        for node in forExecution:
-            task = NodeRunner()
-            task.delay(graph,node)
+        return "< NodeStage::%s at %s >" % (self.node.name,id(self))
 
 class TaskGraph(networkx.MultiDiGraph):
 
     def __init__(self):
         networkx.MultiDiGraph.__init__(self)
-
-    def add_task(self,func):
-        task = TaskNode(func)
-        self.add_node(task)
-        return task
 
     def entryPoints(self):
         innodes = []
@@ -68,22 +40,55 @@ class TaskGraph(networkx.MultiDiGraph):
 
 class TaskNode(object):
 
-    def __init__(self,func,id=None):
-        self.func = func
+    def __init__(self,id=None):
+        """TaskNode is meant to be subclassed.  An instance of that subclass will be run on the farm
+        with its input and outputs defined by the isntance's location in the TaskGraph.  The forward definition
+        of the nodeID with a UUID allows each Task in the graph to have full picture of the state of the rest of the 
+        graph."""
         self.nodeID = uuid.uuid1() or id
-        funcrep = ".".join([self.func.__module__,self.func.__name__])
-        self.name = "%s:%s" % (funcrep,self.idToString())
+        self.name = self.__class__.__name__
         self.pos = (10,10)
 
     def __repr__(self):
-        funcrep = ".".join([self.func.__module__,self.func.__name__])
-        return "TaskNode(%s,id='%s')" % (funcrep,self.idToString())
+        return "TaskNode(%s,id='%s')" % (self.__class__.__name__,self.idToString())
 
     def idToString(self):
+        """Casts the uuid to a string."""
         return str(self.nodeID)
 
     def argCount(self):
-        return 2
+        """Abstract method responsible for reporting the number available connections."""
+        raise NotImplementedError
+
+    def func(self,*args,**kwargs):
+        """Abstract method, represents the meat of the Task, executes code and produces results."""
+        raise NotImplementedError
+
+
+class NodeRunner(Task):
+
+    def __init__(self):
+        """NodeRunner is a subclass of Celery's Task class.  It is responsible for running tasks
+        on the queue and dispatching down stream Tasks."""
+        Task.__init__(self)
+
+    def run(self, graph, node, *args,**kwargs):
+        """This function is called by celery."""
+
+        #Get incomming products
+        positional,keyword = getUpstreamProduct(graph, node)
+        positional.extend(args)
+        keyword.update(kwargs)
+        #execute the node
+        result = node.func(*positional,**keyword)
+        print result
+        setResult(node,result)
+
+        forExecution = downstreamStatus(graph,node)
+        for node in forExecution:
+            task = NodeRunner()
+            task.delay(graph,node)
+
 
 def getNodeProduct(node):
     """Get result produced by node, deserialize and return."""
@@ -135,6 +140,8 @@ def downstreamStatus(graph,node):
     return readyToExecute
 
 def getGraphProducts(graph):
+    """Returns a list of values produced by nodes who's outputs are not connected.  IT is useful 
+    examining a graph as if it were itself a task."""
     results = []
     for node in graph.nodes():
         if graph.in_edges(node) and not graph.out_edges(node):
@@ -142,14 +149,7 @@ def getGraphProducts(graph):
     return results
 
 def setResult(node,value):
+    """Sets a value in a node's result location based on the node's UUID."""
     RedisConnect.conn.set(node.idToString(),cPickle.dumps(value))
 
-def add(x,y):
-    return x + y
 
-def asum(*args):
-    return sum(args)
-
-def stubfunc(graph,node,*args,**kwargs):
-    runner = NodeRunner()
-    runner.delay(graph,node,*args,**kwargs)

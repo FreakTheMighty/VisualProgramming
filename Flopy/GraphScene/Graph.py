@@ -51,7 +51,7 @@ class GraphScene(QtGui.QGraphicsScene):
             nodeItem1 = self.addNode(node1)
         if not nodeItem2:
             nodeItem2 = self.addNode(node2)
-        
+
         try:
             arrow = self.findEdgeItem(nodeItem2,pos)[0]
         except IndexError, e:
