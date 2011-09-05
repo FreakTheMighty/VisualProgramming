@@ -2,6 +2,7 @@
 
 #Standard libraries
 import sys
+import math
 
 #Third party libraries
 from PyQt4.QtGui import QApplication
@@ -10,8 +11,8 @@ import networkx
 import yaml
 
 #Core libraries
-import Graph
-import Nodes
+import GraphScene.Graph as Graph
+import Flow.TaskGraph as TaskGraph
 
 
 if __name__ == "__main__":
@@ -19,12 +20,19 @@ if __name__ == "__main__":
     main =  QtGui.QMainWindow()
     main.resize(400,400)
 
-    graph = Nodes.CodeGraph()
     view = QtGui.QGraphicsView()
+
+    graph = TaskGraph.TaskGraph()
     graphscene= Graph.GraphScene(graph)
+    a = graph.add_task(math.pow)
+    b = graph.add_task(math.pow)
+    c = graph.add_task(math.pow)
+    graph.add_edge(a,b,0)
+    graph.add_edge(c,b,1)
+    graphscene.addGraph(graph)
+    
 
     oploader = Graph.OpLoader(graphscene)
-    graphscene.oploader = oploader
     oploader.setGeometry(0,0,200,30)
     opsmodel = Graph.OperatorsModel()
     completer = QtGui.QCompleter(opsmodel)
@@ -36,7 +44,5 @@ if __name__ == "__main__":
 
     main.setCentralWidget(view)
     main.show()
-
-
 
     sys.exit(app.exec_())

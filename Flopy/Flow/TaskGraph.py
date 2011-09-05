@@ -71,6 +71,9 @@ class TaskNode(object):
     def __init__(self,func,id=None):
         self.func = func
         self.nodeID = uuid.uuid1() or id
+        funcrep = ".".join([self.func.__module__,self.func.__name__])
+        self.name = "%s:%s" % (funcrep,self.idToString())
+        self.pos = (10,10)
 
     def __repr__(self):
         funcrep = ".".join([self.func.__module__,self.func.__name__])
@@ -78,6 +81,9 @@ class TaskNode(object):
 
     def idToString(self):
         return str(self.nodeID)
+
+    def argCount(self):
+        return 2
 
 def getNodeProduct(node):
     """Get result produced by node, deserialize and return."""
