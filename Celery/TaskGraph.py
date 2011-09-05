@@ -20,6 +20,10 @@ class NodeStage(object):
         things = [self.graph, self.node] + list(args)
         return self.runner.apply_async(things)
 
+    def __repr__(self):
+        funcname = ".".join([self.node.func.__module__,self.node.func.__name__])
+        return "< NodeStage::%s at %s >" % (funcname,id(self))
+
 class NodeRunner(Task):
 
     def __init__(self):
@@ -47,10 +51,12 @@ class TaskGraph(networkx.MultiDiGraph):
     def __init__(self):
         networkx.MultiDiGraph.__init__(self)
 
-    def add_edge(self,u,v,signature):
-        networkx.MultiDiGraph.add_edge(self,u,v,key=signature)
+    def add_task(self,func):
+        task = TaskNode(func)
+        self.add_node(task)
+        return task
 
-    def interface(self):
+    def entryPoints(self):
         innodes = []
         for node in self.nodes():
             if not self.in_edges(node):

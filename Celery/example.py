@@ -5,12 +5,12 @@ import TaskGraph
 
 def run():
     graph = TaskGraph.TaskGraph()
-    a = TaskGraph.TaskNode(math.pow)
-    b = TaskGraph.TaskNode(math.pow)
-    c = TaskGraph.TaskNode(math.pow)
-    
-    graph.add_edge(a,b,0)
-    graph.add_edge(c,b,1)
+    #a = TaskGraph.TaskNode(math.pow)
+    #b = TaskGraph.TaskNode(math.pow)
+    #c = TaskGraph.TaskNode(math.pow)
+    #
+    graph.add_edge(math.pow,math.pow,0)
+    graph.add_edge(math.pow,math.pow,1)
     
     t = TaskGraph.NodeRunner() #Task
     t1 = TaskGraph.NodeRunner()
