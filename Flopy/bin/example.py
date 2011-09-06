@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import Flopy.Flow.TaskGraph as TaskGraph
-import Tasks.AddTask.Operator as Operator
+import Tasks.AddTask as AddTask
 import time
 
 def run():

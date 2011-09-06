@@ -12,6 +12,7 @@ import yaml
 
 #Core libraries
 import Flopy.GraphScene.Graph as Graph
+import Flopy.GraphScene.Console.coder as coder
 import Flopy.Flow.TaskGraph as TaskGraph
 
 
@@ -30,6 +31,10 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     main =  QtGui.QMainWindow()
     main.resize(400,400)
+
+    code =  QtGui.QDialog()
+    editor = coder.EditWidget(code)
+    code.show()
 
     view = QtGui.QGraphicsView()
 
