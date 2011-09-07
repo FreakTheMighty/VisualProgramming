@@ -13,7 +13,7 @@ class EditWidget(QtCore.QObject):
         self.editor.Input.codeLineEntered.connect(self.runner.codeSignal)
         self.editor.Input.moveHistory.connect(self.runner.cycleHistory)
         self.runner.codeResult.connect(self.editor.Output.append)
-        self.runner.codeHistory.connect(self.editor.Input.setPlainText)
+        self.runner.codeHistory.connect(self.editor.Input.setColorizedText)
         self.codeThreads = [QtCore.QThread()]
         self.runner.moveToThread(self.codeThreads[-1])
         self.codeThreads[-1].start()

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>443</width>
+    <width>527</width>
     <height>527</height>
    </rect>
   </property>
@@ -14,10 +14,19 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>2</number>
+   </property>
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
+     </property>
+     <property name="opaqueResize">
+      <bool>true</bool>
+     </property>
+     <property name="handleWidth">
+      <number>7</number>
      </property>
      <widget class="QTextEdit" name="Output">
       <property name="readOnly">
