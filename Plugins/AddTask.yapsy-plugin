@@ -1,0 +1,10 @@
+
+re]
+Name = Add
+Module = AddTask
+
+[Documentation]
+Author = Jesse Vander Does
+Version = 0.1
+website = blash
+Description = Test Task
