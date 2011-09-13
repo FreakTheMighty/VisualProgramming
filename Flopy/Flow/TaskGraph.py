@@ -2,12 +2,12 @@ import cPickle
 import uuid
 import networkx
 import redis
-
 from celery.task import Task
 
 class RedisConnect(object):
 
     conn = redis.Redis(host="localhost", port=6379)
+
 
 class NodeStage(object):
 
@@ -63,6 +63,22 @@ class TaskNode(object):
     def func(self,*args,**kwargs):
         """Abstract method, represents the meat of the Task, executes code and produces results."""
         raise NotImplementedError
+
+
+class Plug(TaskNode):
+
+    def __init__(self,id=None):
+        """A plug is node that doesn't require execution.  This can be used to
+        provide client side interaction an entry point into the graph.  For example
+        a Qt signal might hook into a plug to provide user options to nodes in the graph."""
+        TaskNode.__init__(self,id=id)
+        self.juice = None
+
+    def argCount(self):
+        return 0
+
+    def func (self):
+        return self.juice
 
 
 class NodeRunner(Task):

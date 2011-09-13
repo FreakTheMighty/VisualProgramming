@@ -4,7 +4,6 @@ import runner
 
 class EditWidget(QtCore.QObject):
 
-
     def __init__(self,parent=None):
         QtCore.QObject.__init__(self,parent=parent)
         self.editor = editor.Ui_editor()

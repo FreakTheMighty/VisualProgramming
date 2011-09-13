@@ -1,9 +1,9 @@
-import Flopy.Flow.TaskGraph as TaskGraph
+from Flopy.Flow.TaskGraph import TaskNode
 
-class AddTask(TaskGraph.TaskNode):
-
+class AddTask(TaskNode):
+    name = "Add"
     def __init__(self):
-        TaskGraph.TaskNode.__init__(self)
+        TaskNode.__init__(self)
 
     def argCount(self):
         return 2
