@@ -20,9 +20,8 @@ class Manager(object):
                         for attr in module.__dict__:
                             if inspect.isclass(module.__dict__[attr]):
                                 cls = module.__dict__[attr]
-                                if hasattr(cls,"name"):
-                                    if getattr(cls,"name") == "Node":
-                                        classes.append(cls)
+                                if hasattr(cls,"NODE_TYPE"):
+                                    classes.append(cls)
 
         self.classes = classes
         return classes

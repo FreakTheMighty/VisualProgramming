@@ -2,8 +2,7 @@ from Flopy.Flow.TaskGraph import TaskNode
 
 class AddTask(TaskNode):
 
-    name = "Node"
-    print "HELLO"
+    NODE_TYPE = "Add"
 
     def __init__(self):
         TaskNode.__init__(self)

@@ -12,7 +12,7 @@ import yaml
 
 #Core libraries
 import Flopy.GraphScene.Graph as Graph
-import Flopy.GraphScene.Console.coder as coder
+import Flopy.GraphScene.SearchPath as SearchPath
 import Flopy.Flow.TaskGraph as TaskGraph
 
 
@@ -32,9 +32,8 @@ if __name__ == "__main__":
     main =  QtGui.QMainWindow()
     main.resize(400,400)
 
-    code =  QtGui.QDialog()
-    editor = coder.EditWidget(code)
-    code.show()
+    searchPathDialog =  SearchPath.SearchPathDialog()
+    searchPathDialog.show()
 
     view = QtGui.QGraphicsView()
 
@@ -55,7 +54,7 @@ if __name__ == "__main__":
 
     graphscene.setParent(view)
     view.setScene(graphscene)
-
+    
     main.setCentralWidget(view)
     main.show()
 
