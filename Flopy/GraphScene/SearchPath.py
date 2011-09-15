@@ -46,9 +46,9 @@ class SearchPaths(QtCore.QAbstractListModel):
         self.endInsertRows()
         return True
 
-    def removeRow(self, position, path, parent = QtCore.QModelIndex()):
-        self.beginRemoveRows(parent, position, position - 1)
-        self._paths.remove(path)
+    def removeRow(self, position, parent = QtCore.QModelIndex()):
+        self.beginRemoveRows(parent, position, position)
+        self._paths.pop(position)
         self.endRemoveRows()
         return True
 
@@ -96,9 +96,16 @@ class SearchPathDialog(QtGui.QDialog):
         self.setLayout(self.layout)
         self.addButton = QtGui.QPushButton("Add")
         self.layout.addWidget(self.addButton)
+        self.removeButton = QtGui.QPushButton("Remove")
+        self.layout.addWidget(self.removeButton)
         self.view = SearchPathView(parent=self)
         self.layout.addWidget(self.view)
         self.addButton.clicked.connect(self.addPath)
+        self.removeButton.clicked.connect(self.removePath)
 
     def addPath(self,checked):
         self.view.model().insertRow(0,os.getcwd())
+
+    def removePath(self,checked):
+        for idx in self.view.selectedIndexes():
+            self.view.model().removeRow(idx.row())
