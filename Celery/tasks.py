@@ -6,7 +6,6 @@ from celery.task.sets import subtask
 from celery.task import Task
 
 import redis
-import TaskGraph
 
 class NodeRunner(Task):
     
