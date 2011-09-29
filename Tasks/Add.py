@@ -8,4 +8,5 @@ class Add(Operator.TaskNode):
         Operator.TaskNode.__init__(self,*args,**kwargs)
 
     def run(self,a,b):
-        return a + b
+        val = a + b
+        return Operator.Packet("flow",[val],{})
